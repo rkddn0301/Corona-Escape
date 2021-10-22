@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- JAVA와 연결할 Mapper 파일 설정 -->
+<mapper namespace="poly.persistance.mapper.IUserMapper">
+
+	<!-- 회원가입 -->
+	<insert id="InsertUser" parameterType="UserDTO">
+		INSERT INTO CORONA_USER(
+		USER_ID,
+		USER_NAME,
+		PASSWORD,
+		YEAR,
+		MONTH,
+		DAY,
+		EMAIL,
+		NICK_NAME,
+		GENDER,
+		ADDR1,
+		ADDR2,
+		AUTHOR
+		)VALUES(
+		#{user_id},
+		#{user_name},
+		#{password},
+		#{year},
+		#{month},
+		#{day},
+		#{email},
+		#{nick_name},
+		#{gender},
+		#{addr1},
+		#{addr2},
+		0
+		)
+	</insert>
+
+	<!-- 아이디 중복 체크 -->
+	<select id="idCheck" parameterType="UserDTO" resultType="int">
+		SELECT
+		COUNT(*)
+		FROM CORONA_USER
+		WHERE USER_ID = #{user_id}
+	</select>
+
+	<!-- 이메일 중복체크 -->
+	<select id="mailCheck" parameterType="UserDTO" resultType="int">
+		SELECT COUNT(*)
+		FROM CORONA_USER
+		WHERE EMAIL = #{email}
+	</select>
+
+	<!-- 닉네임 중복체크 -->
+	<select id="checkNick" parameterType="UserDTO" resultType="int">
+		SELECT COUNT(*)
+		FROM CORONA_USER
+		WHERE NICK_NAME = #{nick_name}
+	</select>
+
+	<!-- 로그인 구현 -->
+	<select id="getLogin" parameterType="UserDTO"
+		resultType="UserDTO">
+		SELECT USER_NO, USER_ID, USER_NAME, YEAR, MONTH, DAY,
+		EMAIL, NICK_NAME, GENDER, ADDR1, ADDR2, AUTHOR
+		FROM CORONA_USER
+		WHERE
+		USER_ID = #{user_id} AND PASSWORD = #{password}
+	</select>
+
+	<!-- 아이디 찾기 -->
+	<select id="idFind" parameterType="UserDTO" resultType="UserDTO">
+
+		SELECT
+		USER_ID
+		FROM CORONA_USER
+		WHERE
+		USER_NAME=#{user_name}
+		AND EMAIL=#{email}
+
+	</select>
+
+	<!-- 아이디 찾기(이름, 이메일 일치하는지 확인) -->
+	<select id="idFindCheck" parameterType="UserDTO"
+		resultType="UserDTO">
+		SELECT IF(COUNT(1) = 1, 'Y', 'N') AS EXISTS_YN
+		FROM
+		CORONA_USER
+		WHERE USER_NAME = #{user_name}
+		AND EMAIL = #{email}
+	</select>
+
+	<!-- 비밀번호 찾기(이름, 아이디, 이메일 일치하는지 확인) -->
+	<select id="pwFindCheck" parameterType="UserDTO"
+		resultType="UserDTO">
+		SELECT IF(COUNT(1) = 1, 'Y', 'N') AS EXISTS_YN
+		FROM
+		CORONA_USER
+		WHERE USER_NAME = #{user_name}
+		AND USER_ID = #{user_id}
+		AND
+		EMAIL = #{email}
+	</select>
+
+	<!-- 비밀번호 자동 변경 -->
+	<update id="pwAutoUpdate" parameterType="UserDTO">
+		UPDATE CORONA_USER
+		SET
+		PASSWORD=#{password}
+		WHERE USER_ID = #{user_id}
+	</update>
+
+	<!-- 마이페이지(비밀번호 변경) -->
+	<update id="updatePw" parameterType="UserDTO">
+		UPDATE CORONA_USER
+		SET
+		PASSWORD=#{password}
+		WHERE USER_ID = #{user_id}
+	</update>
+
+	<!-- 마이페이지(주소 변경) -->
+	<update id="updateAddr" parameterType="UserDTO">
+		UPDATE CORONA_USER
+		SET
+		ADDR1=#{addr1}, ADDR2 = #{addr2}
+		WHERE USER_ID = #{user_id}
+	</update>
+
+	<!-- 마이페이지(회원탈퇴) -->
+	<delete id="deleteUser" parameterType="UserDTO">
+		DELETE
+		FROM CORONA_USER
+		WHERE USER_NO = #{user_no}
+	</delete>
+
+	<!-- 회원관리(리스트) -->
+	<select id="getUserList" resultType="UserDTO">
+		SELECT ROW_NUMBER() OVER (ORDER BY C.USER_NO) AS RNUM,
+		C.USER_NO,
+		C.USER_ID, C.NICK_NAME, C.ADDR1
+		FROM CORONA_USER C
+		WHERE C.AUTHOR = 0
+		ORDER BY C.USER_NO DESC LIMIT 10 OFFSET #{offsetnum}
+
+	</select>
+	
+	<!-- 회원관리(회원 수) -->
+	<select id="UserCounter" parameterType="int"
+	resultType="int">
+		SELECT COUNT(USER_NO) AS CNT
+		FROM CORONA_USER 
+		WHERE AUTHOR = 0
+	
+	</select>
+	
+	<!-- 회원관리(검색) -->
+	<select id="SearchList" parameterType="UserDTO"
+	resultType="UserDTO">
+		SELECT ROW_NUMBER() OVER (ORDER BY C.USER_NO) AS RNUM,
+		C.USER_NO, C.USER_ID, C.NICK_NAME, C.ADDR1
+		FROM CORONA_USER C
+		WHERE C.AUTHOR = 0 AND (C.USER_ID LIKE #{search} OR C.NICK_NAME LIKE #{search} )
+		ORDER BY C.USER_NO DESC LIMIT 10 OFFSET #{offsetnum}
+	
+	</select>
+	
+	<!-- 회원관리(검색 수) -->
+	<select id="SearchCounter" parameterType="UserDTO"
+	resultType="int">
+		SELECT COUNT(USER_NO) AS CNT
+		FROM CORONA_USER
+		WHERE AUTHOR = 0 AND (USER_ID LIKE #{search} OR NICK_NAME LIKE #{search})
+	
+	
+	</select>
+
+	<!-- 회원관리(탈퇴) -->
+	<delete id="dropUser" parameterType="UserDTO">
+		DELETE
+		FROM CORONA_USER
+		WHERE USER_NO = #{user_no}
+	
+	</delete>
+
+</mapper>

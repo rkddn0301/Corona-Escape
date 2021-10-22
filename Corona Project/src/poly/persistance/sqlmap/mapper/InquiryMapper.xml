@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- JAVA와 연결할 Mapper 파일 설정 -->
+<mapper namespace="poly.persistance.mapper.IInquiryMapper">
+
+	<!-- 문의내역 리스트(관리자) -->
+	<select id="getInquiryList" resultType="InquiryDTO">
+		SELECT ROW_NUMBER() OVER
+		(ORDER BY I.INQUIRY_NO) AS RNUM,
+		I.INQUIRY_NO, I.INQUIRY_TITLE,
+		I.I_NICK_NAME, date_format(I.INQUIRY_DATE,'%Y-%m-%d
+		%H:%i') AS RDATE,
+		INQUIRY_RESPONSE
+		FROM INQUIRY_DETAILS I
+		WHERE I.INQUIRY_RESPONSE != '답변완료'
+		ORDER BY I.INQUIRY_NO DESC LIMIT 10 OFFSET #{offsetnum}
+	</select>
+
+	<!-- 문의내역 리스트(사용자) -->
+	<select id="getInquiryUser" resultType="InquiryDTO">
+		SELECT ROW_NUMBER() OVER
+		(ORDER BY I.INQUIRY_NO) AS RNUM,
+		I.INQUIRY_NO, I.INQUIRY_TITLE,
+		I.I_NICK_NAME, date_format(I.INQUIRY_DATE,'%Y-%m-%d
+		%H:%i') AS RDATE,
+		INQUIRY_RESPONSE
+		FROM INQUIRY_DETAILS I
+		WHERE I.I_USER_NO = #{i_user_no}
+		ORDER BY I.INQUIRY_NO DESC LIMIT 10 OFFSET #{offsetnum}
+
+	</select>
+	
+	<!-- 문의내역 리스트(관리자 수) -->
+	<select id="InquiryMCounter" parameterType="int"
+	resultType="int">
+		SELECT COUNT(INQUIRY_NO) AS CNT
+		FROM INQUIRY_DETAILS
+		WHERE INQUIRY_RESPONSE != '답변완료'
+	
+	</select>
+	
+	<!-- 문의내역 리스트(사용자 수) -->
+	<select id="InquiryUCounter" parameterType="InquiryDTO"
+	resultType="int">
+		SELECT COUNT(INQUIRY_TITLE) AS CNT
+		FROM INQUIRY_DETAILS
+		WHERE I_USER_NO = #{i_user_no}
+	
+	</select>
+	
+	<!-- 문의내역 검색(관리자) -->
+	<select id="SearchList" parameterType="InquiryDTO"
+	resultType="InquiryDTO">
+		SELECT ROW_NUMBER() OVER
+		(ORDER BY I.INQUIRY_NO) AS RNUM,
+		I.INQUIRY_NO, I.INQUIRY_TITLE,
+		I.I_NICK_NAME, date_format(I.INQUIRY_DATE,'%Y-%m-%d
+		%H:%i') AS RDATE,
+		INQUIRY_RESPONSE
+		FROM INQUIRY_DETAILS I
+		WHERE I.INQUIRY_RESPONSE != '답변완료' AND (I.INQUIRY_TITLE LIKE #{search} OR I.I_NICK_NAME LIKE #{search})
+		ORDER BY I.INQUIRY_NO DESC LIMIT 10 OFFSET #{offsetnum}
+	
+	
+	</select>
+	<!-- 문의내역 검색(사용자) -->
+	<select id="SearchUser" parameterType="InquiryDTO"
+	resultType="InquiryDTO">
+		SELECT ROW_NUMBER() OVER
+		(ORDER BY I.INQUIRY_NO) AS RNUM,
+		I.INQUIRY_NO, I.INQUIRY_TITLE,
+		I.I_NICK_NAME, date_format(I.INQUIRY_DATE,'%Y-%m-%d
+		%H:%i') AS RDATE,
+		INQUIRY_RESPONSE
+		FROM INQUIRY_DETAILS I
+		WHERE I.I_USER_NO = #{i_user_no} AND (I.INQUIRY_TITLE LIKE #{search} OR I.I_NICK_NAME LIKE #{search})
+		ORDER BY I.INQUIRY_NO DESC LIMIT 10 OFFSET #{offsetnum}
+	
+	</select>
+	<!-- 문의내역 검색 수(관리자) -->
+	<select id="SearchMCounter" parameterType="InquiryDTO"
+	resultType="int">
+		SELECT COUNT(INQUIRY_NO) AS CNT
+		FROM INQUIRY_DETAILS
+		WHERE INQUIRY_RESPONSE != '답변완료' AND (INQUIRY_TITLE LIKE #{search} OR I_NICK_NAME LIKE #{search})
+	
+	</select>
+	<!-- 문의내역 검색 수(사용자) -->
+	<select id="SearchUCounter" parameterType="InquiryDTO"
+	resultType="int">
+	
+		SELECT COUNT(INQUIRY_TITLE) AS CNT
+		FROM INQUIRY_DETAILS
+		WHERE I_USER_NO = #{i_user_no} AND (INQUIRY_TITLE LIKE #{search} OR I_NICK_NAME LIKE #{search})
+	
+	</select>
+	
+
+	<!-- 문의하기 -->
+	<insert id="insertInquiry" parameterType="InquiryDTO">
+		INSERT INTO
+		INQUIRY_DETAILS (
+		INQUIRY_TITLE,
+		INQUIRY_CONTENT,
+		INQUIRY_DATE,
+		INQUIRY_CH_DATE,
+		INQUIRY_RESPONSE,
+		I_USER_NO,
+		I_USER_ID,
+		I_NICK_NAME,
+		I_AUTHOR
+		) VALUES (
+		#{inquiry_title},
+		#{inquiry_content},
+		current_timestamp,
+		current_timestamp,
+		'답변대기',
+		#{i_user_no},
+		#{i_user_id},
+		#{i_nick_name},
+		#{i_author}
+		)
+	</insert>
+
+	<!-- 문의내역 상세 -->
+	<select id="InquiryDetail" parameterType="InquiryDTO"
+		resultType="InquiryDTO">
+
+	SELECT
+		INQUIRY_NO,
+		INQUIRY_TITLE,
+		INQUIRY_CONTENT,
+		I_NICK_NAME,
+		date_format(INQUIRY_DATE,'%Y-%m-%d %H:%i') AS RDATE,
+		INQUIRY_RESPONSE
+	FROM
+		INQUIRY_DETAILS
+	WHERE
+		INQUIRY_NO=#{inquiry_no}
+
+
+	</select>
+	
+	<!-- 문의내역 삭제 -->
+	<delete id="InquiryDelete" parameterType="InquiryDTO">
+	DELETE
+	FROM INQUIRY_DETAILS
+	WHERE
+		INQUIRY_NO = #{inquiry_no}
+	
+	</delete>
+	
+	<!-- 문의내역 수정 -->
+	<update id="InquiryUpdate" parameterType="InquiryDTO">
+	UPDATE INQUIRY_DETAILS
+	SET
+		INQUIRY_CONTENT=#{inquiry_content},
+		INQUIRY_RESPONSE='답변완료'
+	WHERE
+		INQUIRY_NO = #{inquiry_no}
+	
+	</update>
+
+
+
+</mapper>

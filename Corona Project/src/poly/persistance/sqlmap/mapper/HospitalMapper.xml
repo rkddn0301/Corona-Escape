@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- JAVA와 연결할 Mapper 파일 설정 -->
+<mapper namespace="poly.persistance.mapper.IHospitalMapper">
+
+<!-- 선별진료소 리스트 쿼리 -->
+	<select id="getHospitalList" resultType="HospitalDTO">
+		SELECT ROW_NUMBER() OVER (ORDER BY H.HOSPITAL_NO) AS RNUM,
+		H.HOSPITAL_NO, H.HOSPITAL_NAME, H.HOSPITAL_ADDR, H.HOSPITAL_CALL, H.HOSPITAL_TIME, H.HOSPITAL_TIME2, H.HOSPITAL_TIME3
+		FROM HOSPITAL_TOTAL H
+		ORDER BY H.HOSPITAL_NO LIMIT 10 OFFSET #{offsetnum}
+	</select>
+	
+	<!-- 선별진료소 게시물 수 -->
+	<select id="HospitalCounter" parameterType="int"
+	resultType="int">
+		SELECT COUNT(HOSPITAL_NO) AS CNT
+		FROM HOSPITAL_TOTAL
+	
+	</select>
+	
+	<!-- 선별진료소(검색) -->
+	<select id="SearchList" parameterType="HospitalDTO"
+	resultType="HospitalDTO">
+		SELECT ROW_NUMBER() OVER (ORDER BY H.HOSPITAL_NO) AS RNUM,
+		H.HOSPITAL_NO, H.HOSPITAL_NAME, H.HOSPITAL_ADDR, H.HOSPITAL_CALL, H.HOSPITAL_TIME, H.HOSPITAL_TIME2, H.HOSPITAL_TIME3
+		FROM HOSPITAL_TOTAL H
+		WHERE H.HOSPITAL_NAME LIKE #{search}
+		ORDER BY H.HOSPITAL_NO LIMIT 10 OFFSET #{offsetnum}
+	</select>
+	
+	<!-- 선별진료소(검색 수) -->
+	<select id="SearchCounter" parameterType="HospitalDTO"
+	resultType="int">
+		SELECT COUNT(HOSPITAL_NO) AS CNT
+		FROM HOSPITAL_TOTAL
+		WHERE HOSPITAL_NAME LIKE #{search}
+	</select>
+	
+</mapper>

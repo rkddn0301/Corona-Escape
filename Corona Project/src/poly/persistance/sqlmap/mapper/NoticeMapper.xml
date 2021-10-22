@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- JAVA와 연결할 Mapper 파일 설정 -->
+<mapper namespace="poly.persistance.mapper.INoticeMapper">
+
+	<!-- 공지사항 리스트 쿼리 -->
+	<select id="getNoticeList" resultType="NoticeDTO">
+		SELECT ROW_NUMBER() OVER (ORDER BY C.NOTICE_NO) AS RNUM,
+		C.NOTICE_NO, C.NOTICE_TITLE, C.N_NICK_NAME, date_format(C.NOTICE_DATE,'%Y-%m-%d
+		%H:%i') AS RDATE
+		FROM CORONA_NOTICE C
+		ORDER BY C.NOTICE_NO DESC LIMIT 10 OFFSET #{offsetnum}
+	</select>
+	
+	<!-- 공지사항 게시물 수 -->
+	<select id="NoticeCounter" parameterType="int"
+	resultType="int">
+		SELECT COUNT(NOTICE_NO) AS CNT
+		FROM CORONA_NOTICE
+	
+	</select>
+	
+	<!-- 공지사항(검색) -->
+	<select id="SearchList" parameterType="NoticeDTO"
+	resultType="NoticeDTO">
+		SELECT ROW_NUMBER() OVER (ORDER BY C.NOTICE_NO) AS RNUM,
+		C.NOTICE_NO, C.NOTICE_TITLE, C.N_NICK_NAME, date_format(C.NOTICE_DATE,'%Y-%m-%d
+		%H:%i') AS RDATE
+		FROM CORONA_NOTICE C
+		WHERE C.NOTICE_TITLE LIKE #{search}
+		ORDER BY C.NOTICE_NO DESC LIMIT 10 OFFSET #{offsetnum}
+	</select>
+	
+	<!-- 공지사항(검색 수) -->
+	<select id="SearchCounter" parameterType="NoticeDTO"
+	resultType="int">
+		SELECT COUNT(NOTICE_NO) AS CNT
+		FROM CORONA_NOTICE
+		WHERE NOTICE_TITLE LIKE #{search}
+	</select>
+
+	<!-- 공지사항 등록 -->
+	<insert id="insertNotice" parameterType="NoticeDTO">
+		INSERT INTO CORONA_NOTICE (
+		NOTICE_TITLE,
+		NOTICE_CONTENT,
+		NOTICE_DATE,
+		NOTICE_CH_DATE,
+		NOTICE_CNT,
+		N_USER_NO,
+		N_USER_ID,
+		N_NICK_NAME,
+		N_AUTHOR
+		) VALUES (
+		#{notice_title},
+		#{notice_content},
+		current_timestamp,
+		current_timestamp,
+		0,
+		#{n_user_no},
+		#{n_user_id},
+		#{n_nick_name},
+		#{n_author}
+		)
+	</insert>
+
+	<!-- 공지사항 상세 -->
+	<select id="NoticeDetail" parameterType="NoticeDTO"
+		resultType="NoticeDTO">
+	SELECT
+		NOTICE_NO,
+		NOTICE_TITLE,
+		NOTICE_CONTENT,
+		NOTICE_CNT,
+		N_NICK_NAME,
+		date_format(NOTICE_DATE,'%Y-%m-%d %H:%i') AS RDATE
+	FROM
+		CORONA_NOTICE
+	WHERE
+		NOTICE_NO=#{notice_no}
+	</select>
+
+	<!-- 게시판 조회수 증가 -->
+	<update id="insertReadCnt" parameterType="NoticeDTO">
+		UPDATE CORONA_NOTICE
+		SET
+		NOTICE_CNT = NOTICE_CNT + 1
+		WHERE
+		NOTICE_NO=#{notice_no}
+
+	</update>
+	
+	<!-- 게시글 삭제 -->
+	<delete id="NoticeDelete" parameterType="NoticeDTO">
+	DELETE
+	FROM CORONA_NOTICE
+	WHERE
+		NOTICE_NO = #{notice_no}
+	</delete>
+	
+	<!-- 게시글 수정 -->
+	<update id="Noticeupdate" parameterType="NoticeDTO">
+	UPDATE CORONA_NOTICE
+	SET
+		NOTICE_TITLE=#{notice_title},
+		NOTICE_CONTENT=#{notice_content}
+	WHERE
+		NOTICE_NO = #{notice_no}
+	
+	</update>
+
+</mapper>
